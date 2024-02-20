@@ -81,6 +81,36 @@ const tourSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    startLocation: {
+      // GeoJSON
+      type: {
+        type: String,
+        default: 'Point',
+        enum: ['Point'],
+      },
+      coordinates: [Number],
+      address: String,
+      description: String,
+    },
+    locations: [
+      {
+        type: {
+          type: String,
+          default: 'Point',
+          enum: ['Point'],
+        },
+        coordinates: [Number],
+        address: String,
+        description: String,
+        day: Number,
+      },
+    ],
+    guides: [
+      {
+        type: mongoose.Schema.ObjectId,
+        ref: 'User',
+      },
+    ],
   },
   {
     toJSON: { virtuals: true },
@@ -91,6 +121,13 @@ const tourSchema = new mongoose.Schema(
 // In Mongoose, a virtual is a property that is not stored in MongoDB. Virtuals are typically used for computed properties on documents.
 tourSchema.virtual('durationWeeks').get(function (next) {
   return this.duration / 7;
+});
+
+// virtual populate
+tourSchema.virtual('reviews', {
+  ref: 'Review',
+  foreignField: 'tour',
+  localField: '_id',
 });
 
 // Middleware (also called pre and post hooks) are functions which are passed control during execution of asynchronous functions.
@@ -124,6 +161,15 @@ tourSchema.pre(/^find/, function (next) {
 //   console.log(`query took ${Date.now() - this.start} milliseconds!`);
 //   next();
 // });
+
+// Populating tour guides
+tourSchema.pre(/^find/, function (next) {
+  this.populate({
+    path: 'guides',
+    // select: '-__v -passwordChangedAt',
+  });
+  next();
+});
 
 // 3) Aggregation middleware
 // In aggregate middleware, this refers to the aggregation object

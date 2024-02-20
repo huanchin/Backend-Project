@@ -1,6 +1,7 @@
 const Tour = require('./../models/tourModel');
 const APIFeatures = require('./../utils/apiFeatures');
 const AppError = require('./../utils/appError');
+const factory = require('./handlerFactory');
 /********** Route Handlers **************/
 // exports.checkBody = (req, res, next) => {
 //   if (!req.body.name || !req.body.price) {
@@ -29,88 +30,92 @@ exports.aliasTopTours = async (req, res, next) => {
   next();
 };
 
-exports.getAllTours = async (req, res, next) => {
-  try {
-    // console.log(req.reqestTime);
-    //******* build the query *******/
-    // // 1A) Filtering
-    // const queryObj = { ...req.query };
-    // const excludedFields = ['page', 'sort', 'limit', 'fields'];
-    // excludedFields.forEach((el) => delete queryObj[el]);
+exports.getAllTours = factory.getAll(Tour);
 
-    // // console.log(req.query, queryObj);
+// exports.getAllTours = async (req, res, next) => {
+//   try {
+//     // console.log(req.reqestTime);
+//     //******* build the query *******/
+//     // // 1A) Filtering
+//     // const queryObj = { ...req.query };
+//     // const excludedFields = ['page', 'sort', 'limit', 'fields'];
+//     // excludedFields.forEach((el) => delete queryObj[el]);
 
-    // // 1B) Advanced filtering
-    // // { difficulty: 'easy', duration: { $gte: 5 } }
-    // // { difficulty: 'easy', duration: { gte: '5' } }
-    // // gte, gt, lte, lt
-    // let queryStr = JSON.stringify(queryObj);
-    // queryStr = queryStr.replace(/\b(gte|gt|lte|lt)\b/g, (match) => `$${match}`);
+//     // // console.log(req.query, queryObj);
 
-    // // console.log(JSON.parse(queryStr));
+//     // // 1B) Advanced filtering
+//     // // { difficulty: 'easy', duration: { $gte: 5 } }
+//     // // { difficulty: 'easy', duration: { gte: '5' } }
+//     // // gte, gt, lte, lt
+//     // let queryStr = JSON.stringify(queryObj);
+//     // queryStr = queryStr.replace(/\b(gte|gt|lte|lt)\b/g, (match) => `$${match}`);
 
-    // let query = Tour.find(JSON.parse(queryStr));
-    // // const query = Tour.find()
-    // //   .where('duration')
-    // //   .equals(5)
-    // //   .where('difficulty')
-    // //   .equals('easy');
+//     // // console.log(JSON.parse(queryStr));
 
-    // // 2) Sorting
-    // // 127.0.0.1:8000/api/v1/tours?sort=-price,-ratingsAverage
-    // if (req.query.sort) {
-    //   const sortBy = req.query.sort.split(',').join(' ');
-    //   // console.log(sortBy);
-    //   query = query.sort(sortBy);
-    // } else {
-    //   query = query.sort('-createdAt _id');
-    // }
+//     // let query = Tour.find(JSON.parse(queryStr));
+//     // // const query = Tour.find()
+//     // //   .where('duration')
+//     // //   .equals(5)
+//     // //   .where('difficulty')
+//     // //   .equals('easy');
 
-    // // 3) Limiting fields
-    // // 127.0.0.1:8000/api/v1/tours?fields=name,duration,difficulty,price
-    // if (req.query.fields) {
-    //   const fields = req.query.fields.split(',').join(' ');
-    //   query = query.select(fields);
-    // } else {
-    //   query = query.select('-__v');
-    // }
+//     // // 2) Sorting
+//     // // 127.0.0.1:8000/api/v1/tours?sort=-price,-ratingsAverage
+//     // if (req.query.sort) {
+//     //   const sortBy = req.query.sort.split(',').join(' ');
+//     //   // console.log(sortBy);
+//     //   query = query.sort(sortBy);
+//     // } else {
+//     //   query = query.sort('-createdAt _id');
+//     // }
 
-    // // 4) Pagination
-    // const page = req.query.page * 1 || 1; // convert string to number
-    // const limit = req.query.limit * 1 || 100;
-    // const skip = (page - 1) * limit;
-    // // 127.0.0.1:8000/api/v1/tours?page=2&limit=10
-    // // 1-10, page 1, 11-20, page 2, 21-30, page 3...
-    // query = query.skip(skip).limit(limit);
+//     // // 3) Limiting fields
+//     // // 127.0.0.1:8000/api/v1/tours?fields=name,duration,difficulty,price
+//     // if (req.query.fields) {
+//     //   const fields = req.query.fields.split(',').join(' ');
+//     //   query = query.select(fields);
+//     // } else {
+//     //   query = query.select('-__v');
+//     // }
 
-    // if (req.query.page) {
-    //   const numTours = await Tour.countDocuments();
-    //   if (skip >= numTours) throw new Error('This page does not exist');
-    // }
-    //******* execute the query *******/
-    const features = new APIFeatures(Tour.find(), req.query)
-      .filter()
-      .sort()
-      .limitFields()
-      .paginate();
-    const tours = await features.query;
-    //******* send response *******/
-    res.status(200).json({
-      status: 'success',
-      // requestedAt: req.reqestTime,
-      results: tours.length,
-      data: {
-        tours,
-      },
-    });
-  } catch (err) {
-    next(err);
-  }
-};
+//     // // 4) Pagination
+//     // const page = req.query.page * 1 || 1; // convert string to number
+//     // const limit = req.query.limit * 1 || 100;
+//     // const skip = (page - 1) * limit;
+//     // // 127.0.0.1:8000/api/v1/tours?page=2&limit=10
+//     // // 1-10, page 1, 11-20, page 2, 21-30, page 3...
+//     // query = query.skip(skip).limit(limit);
 
+//     // if (req.query.page) {
+//     //   const numTours = await Tour.countDocuments();
+//     //   if (skip >= numTours) throw new Error('This page does not exist');
+//     // }
+//     //******* execute the query *******/
+//     const features = new APIFeatures(Tour.find(), req.query)
+//       .filter()
+//       .sort()
+//       .limitFields()
+//       .paginate();
+
+//     const tours = await features.query;
+//     //******* send response *******/
+//     res.status(200).json({
+//       status: 'success',
+//       // requestedAt: req.reqestTime,
+//       results: tours.length,
+//       data: {
+//         tours,
+//       },
+//     });
+//   } catch (err) {
+//     next(err);
+//   }
+// };
+
+// exports.getTour = factory.getOne(Tour, { path: 'reviews' });
 exports.getTour = async (req, res, next) => {
   try {
-    const tour = await Tour.findById(req.params.id);
+    const tour = await Tour.findById(req.params.id).populate('reviews');
     // Tour.findOne({ _id: req.params.id })
 
     if (!tour) {
@@ -128,61 +133,65 @@ exports.getTour = async (req, res, next) => {
   }
 };
 
-exports.createTour = async (req, res, next) => {
-  try {
-    // const newTour = new Tour(req.body);
-    // newTour.save()
-    const newTour = await Tour.create(req.body);
+exports.createTour = factory.createOne(Tour);
+// exports.createTour = async (req, res, next) => {
+//   try {
+//     // const newTour = new Tour(req.body);
+//     // newTour.save()
+//     const newTour = await Tour.create(req.body);
 
-    res.status(201).json({
-      status: 'success',
-      data: {
-        tour: newTour,
-      },
-    });
-  } catch (err) {
-    next(err);
-  }
-};
+//     res.status(201).json({
+//       status: 'success',
+//       data: {
+//         tour: newTour,
+//       },
+//     });
+//   } catch (err) {
+//     next(err);
+//   }
+// };
 
-exports.updateTour = async (req, res, next) => {
-  try {
-    const tour = await Tour.findByIdAndUpdate(req.params.id, req.body, {
-      new: true,
-      runValidators: true,
-    });
+exports.updateTour = factory.updateOne(Tour);
+// exports.updateTour = async (req, res, next) => {
+//   try {
+//     const tour = await Tour.findByIdAndUpdate(req.params.id, req.body, {
+//       new: true,
+//       runValidators: true,
+//     });
 
-    if (!tour) {
-      return next(new AppError(`No tour found with that ID`, 404));
-    }
+//     if (!tour) {
+//       return next(new AppError(`No tour found with that ID`, 404));
+//     }
 
-    res.status(200).json({
-      status: 'success',
-      data: {
-        tour,
-      },
-    });
-  } catch (err) {
-    next(err);
-  }
-};
+//     res.status(200).json({
+//       status: 'success',
+//       data: {
+//         tour,
+//       },
+//     });
+//   } catch (err) {
+//     next(err);
+//   }
+// };
 
-exports.deleteTour = async (req, res, next) => {
-  try {
-    const tour = await Tour.findByIdAndDelete(req.params.id);
+exports.deleteTour = factory.deleteOne(Tour);
 
-    if (!tour) {
-      return next(new AppError(`No tour found with that ID`, 404));
-    }
+// exports.deleteTour = async (req, res, next) => {
+//   try {
+//     const tour = await Tour.findByIdAndDelete(req.params.id);
 
-    res.status(204).json({
-      status: 'success',
-      data: null,
-    });
-  } catch (err) {
-    next(err);
-  }
-};
+//     if (!tour) {
+//       return next(new AppError(`No tour found with that ID`, 404));
+//     }
+
+//     res.status(204).json({
+//       status: 'success',
+//       data: null,
+//     });
+//   } catch (err) {
+//     next(err);
+//   }
+// };
 
 // 聚合管線 Aggregation Pipeline 是透過 Aggregation framework 將 document 進入一個由多個階段（stage）組成的管線，可以對每個階段的管線進行分組、過濾等功能，在經過一系列的處理之後，輸出相應的聚合結果。
 exports.getTourStats = async (req, res, next) => {
